@@ -1,37 +1,38 @@
-// we maintain one piece of state: the last valid style property that we received
-// we receive a list of characters
-// a sequence of characters may form a valid style property. Style properties are abbreviations of
-// common css attributes, broadly, they are either plural or singular. Plural are ones like margin or padding
-// that may be affixed with a positional modifier like marginLeft marginRight etc.
-// singular ones are like fs = font-size or fw = font-weight.
-//
-// let's start with the box model
-//
-// valid prefixes for  box-model things:
-const prefixes = [
-  "m", // margin
-  "p", // padding
-  "b", // border
-  "f" // font
+const commandPatterns = [
+  {
+    name: "box",
+    prefixes: [
+      "m", // margin
+      "p", // padding
+      "b" // border
+    ],
+    suffixes: [
+      "t", // top
+      "r", // right
+      "b", // bottom
+      "l", // left
+      "x", // horizontal
+      "y" // vertical
+    ]
+  },
+  {
+    name: "font",
+    prefixes: ["f"],
+    suffixes: ["w", "s"]
+  }
 ];
-// valid postfixes for box-model things:
-const postfixes = [
-  "t", // top
-  "r", // right
-  "b", // bottom
-  "l", // left
-  "x", // horizontal
-  "y", // vertical
-  "w",
-  "s"
-];
-// now that we have the prefixes and post fixes, we can construct a regex:
-const matcher = arr => "[" + arr.join(" ") + "]";
-const boxModelRegex = new RegExp(matcher(prefixes) + matcher(postfixes));
 
 const abbreviations = {
   fs: "fontSize",
   fw: "fontWeight"
+};
+
+const patternsIncludes = (key, char) => {
+  for (const x of commandPatterns) {
+    if (x[key].includes(char)) {
+      return true;
+    }
+  }
 };
 
 const quickStyle = (styleProps, source) => {
@@ -42,7 +43,10 @@ const quickStyle = (styleProps, source) => {
   while (characters.length > 0) {
     const char = characters.pop();
     const isNumber = !isNaN(char);
-    if (prefixes.includes(char) && (state === "idle" || state === "styled")) {
+    if (
+      patternsIncludes("prefixes", char) &&
+      (state === "idle" || state === "styled")
+    ) {
       state = "prefixed";
       currentStyle = char;
     }
@@ -63,7 +67,7 @@ const quickStyle = (styleProps, source) => {
       }
     }
 
-    if (state === "prefixed" && postfixes.includes(char)) {
+    if (state === "prefixed" && patternsIncludes("suffixes", char)) {
       currentStyle += char;
     }
     if (abbreviations[currentStyle]) {
