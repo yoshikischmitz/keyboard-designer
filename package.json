@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emmetio/abbreviation": "^2.0.0-rc.2",
     "@mdx-js/react": "^1.5.1",
     "@rebass/forms": "^4.0.6",
     "react": "^16.10.2",

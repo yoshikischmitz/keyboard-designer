@@ -1030,6 +1030,18 @@
   resolved "https://registry.yarnpkg.com/@csstools/normalize.css/-/normalize.css-9.0.1.tgz#c27b391d8457d1e893f1eddeaf5e5412d12ffbb5"
   integrity sha512-6It2EVfGskxZCQhuykrfnALg7oVeiI6KclWSmGDqB0AiInVrTGB9Jp9i4/Ad21u9Jde/voVQz6eFX/eSg/UsPA==
 
+"@emmetio/abbreviation@^2.0.0-rc.2":
+  version "2.0.0-rc.2"
+  resolved "https://registry.yarnpkg.com/@emmetio/abbreviation/-/abbreviation-2.0.0-rc.2.tgz#023eb042f13ef951cd0adf613068a276c18316e9"
+  integrity sha512-9d3Vn1w6nZKLbpzO8xAjxZA9z4chv9aPl632sDcOA19Ng/qFm27sLI7phDXXpPBcJOHX1tekQ1kuLrdGCO5akw==
+  dependencies:
+    "@emmetio/scanner" "^0.0.7"
+
+"@emmetio/scanner@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@emmetio/scanner/-/scanner-0.0.7.tgz#f89c3dadf041f0b8fbd24e0ea303fa16102f2cb9"
+  integrity sha512-Pux49/ztCAXytv9BmHqcOiOqKLAfwmTtZU/kns2wfIO3OBY5ANunQlxFC5WedS1L9m5rssew6FypJDtaqEThHw==
+
 "@emotion/cache@^10.0.17":
   version "10.0.19"
   resolved "https://registry.yarnpkg.com/@emotion/cache/-/cache-10.0.19.tgz#d258d94d9c707dcadaf1558def968b86bb87ad71"
