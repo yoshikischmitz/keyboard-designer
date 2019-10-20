@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box, Text } from "rebass";
 import { Input } from "@rebass/forms";
+import Document from "./Document";
 
 const Icon = ({ char, focused, label }) => (
   <Box
@@ -58,8 +59,22 @@ const App = () => {
   const inputRef = useRef(null);
 
   const [tree, setTree] = useState(
-    node("Box", { p: 3, bg: "red" }, node("Text", null, "I am a div"))
+    node(
+      "Box",
+      { p: 3, pt: 5, bg: "purple" },
+      node(
+        "Box",
+        {
+          p: 3,
+          bg: "blue"
+        },
+        ...[0, 1, 2, 3].map(() =>
+          node("Box", { p: 4, bg: "red", mt: 2 }, node("Text", null, "hi thar"))
+        )
+      )
+    )
   );
+  const [selectors, setSelectors] = useState([]);
 
   useEffect(() => {
     document.addEventListener("keydown", e => {
@@ -80,42 +95,45 @@ const App = () => {
   }, [command]);
 
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      sx={{
-        bottom: 3,
-        left: 0,
-        right: 0,
-        position: "absolute"
-      }}
-    >
-      {command && (
-        <Menu>
-          {console.log("input got rendered")}
-          <Input
-            ref={inputRef}
-            value={args}
-            onChange={e => setArgs(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Enter") {
-                setArgs("");
-              }
-            }}
-          />
-        </Menu>
-      )}
-      <Box display="flex" flexDirection="row" justifyContent="center">
-        {menuChars.map(char => (
-          <Icon
-            char={menuIcons[char] || char}
-            focused={command === char}
-            label={menuLabels[char]}
-          />
-        ))}
+    <>
+      <Document node={tree} />
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        sx={{
+          bottom: 3,
+          left: 0,
+          right: 0,
+          position: "absolute"
+        }}
+      >
+        {command && (
+          <Menu>
+            {console.log("input got rendered")}
+            <Input
+              ref={inputRef}
+              value={args}
+              onChange={e => setArgs(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  setArgs("");
+                }
+              }}
+            />
+          </Menu>
+        )}
+        <Box display="flex" flexDirection="row" justifyContent="center">
+          {menuChars.map(char => (
+            <Icon
+              char={menuIcons[char] || char}
+              focused={command === char}
+              label={menuLabels[char]}
+            />
+          ))}
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 
