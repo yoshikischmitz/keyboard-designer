@@ -69,15 +69,19 @@ const App = () => {
   const [tree, setTree] = useState(
     node(
       "Box",
-      { p: 3, pt: 5, bg: "purple" },
+      { p: 3, pt: 5, bg: "orange" },
       node(
         "Box",
         {
           p: 3,
-          bg: "blue"
+          bg: "grey"
         },
         ...[0, 1, 2, 3].map(() =>
-          node("Box", { p: 4, bg: "red", mt: 2 }, node("Text", null, "hi thar"))
+          node(
+            "Box",
+            { p: 4, bg: "white", mt: 2 },
+            node("Text", null, "hi thar")
+          )
         )
       )
     )

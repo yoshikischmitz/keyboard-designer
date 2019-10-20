@@ -31,7 +31,7 @@ const Document = ({ node, path = [], selector, settings }) => {
     const focused = JSON.stringify(path) === JSON.stringify(selector);
     const showOutlines = settings.showOutlines || focused;
     let style = { ...(showOutlines ? focusedStyle : {}) };
-    const color = focused ? "green" : "rgba(255, 255, 255, 0.6)";
+    const color = focused ? "rgba(0, 144, 240, 0.9)" : "rgba(43, 43, 43, 0.4)";
     if (showOutlines) {
       style.outline = `1px solid ${color}`;
     }
@@ -43,7 +43,7 @@ const Document = ({ node, path = [], selector, settings }) => {
             <span
               style={{
                 backgroundColor: color,
-                color: "black",
+                color: "white",
                 position: "absolute",
                 left: 0,
                 top: -14,
