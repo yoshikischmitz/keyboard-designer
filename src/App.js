@@ -1,148 +1,53 @@
 import React, { useState, useEffect, useRef } from "react";
-import "./App.css";
-import { Card, Box, Text } from "rebass";
-import { Input } from "@rebass/forms";
-import quickStyle from "./quick-styler";
-import { ThemeProvider } from "theme-ui";
+import { Box, Text } from "rebass";
 
-// quick hack to show CSS style names for twitter:
-const boxPrefixes = { m: "margin", p: "padding" };
-const boxSuffixes = {
-  t: "top",
-  l: "left",
-  r: "right",
-  b: "bottom",
-  x: "horizontal",
-  y: "vertical"
-};
+const Icon = ({ char, focused }) => (
+  <Box
+    width={24}
+    height={24}
+    display="flex"
+    alignItems="center"
+    justifyContent="center"
+    sx={{
+      border: "1px solid black"
+    }}
+  >
+    <Text fontWeight={focused && "bold"}>{char}</Text>
+  </Box>
+);
 
-let translation = { fontSize: "font-size", fontWeight: "font-weight" };
-
-Object.keys(boxPrefixes).forEach(prefixAbbrev => {
-  const prefixFull = boxPrefixes[prefixAbbrev];
-  translation[prefixAbbrev] = prefixFull;
-
-  Object.keys(boxSuffixes).forEach(suffixAbbrev => {
-    const suffixFull = boxSuffixes[suffixAbbrev];
-    translation[prefixAbbrev + suffixAbbrev] = prefixFull + "-" + suffixFull;
-  });
-});
-
-function App() {
-  const [currentStyle, setCurrentStyle] = useState("");
-  const [source, setSource] = useState("mt3++fs6-p4mx4");
-  const [boxProps, setBoxProps] = useState(quickStyle({}, source).styleProps);
-  const [mode, setMode] = useState("nav");
-  const inputRef = useRef();
-
+const menuChars = ["w", "s", "f", "r"];
+const App = () => {
+  const [menuFocus, setMenuFocus] = useState();
   useEffect(() => {
-    document.addEventListener("keydown", ({ key }) => {
-      switch (key) {
-        case "Escape": {
-          setMode("nav");
-        }
-        case "q": {
-          setMode("qst");
-          inputRef.current.focus();
-        }
+    document.addEventListener("keydown", e => {
+      const { key } = e;
+      if (menuChars.includes(key)) {
+        setMenuFocus(key);
+      }
+      if (key === "Escape") {
+        setMenuFocus(null);
       }
     });
   }, []);
 
   return (
-    <ThemeProvider theme={{ fontWeights: ["100", "300", "500", "bold"] }}>
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column"
-        }}
-      >
-        <Card {...boxProps} bg="rgba(0, 0, 0, 0.3)">
-          <Text>I am a div</Text>
-        </Card>
-        <Box
-          style={{
-            bottom: 8,
-            right: 8,
-            position: "absolute",
-            alignSelf: "center",
-            width: 500
-          }}
-        >
-          {Object.keys(boxProps).length > 0 && (
-            <Box
-              bg="rgba(0, 0, 0, 0.85)"
-              color="white"
-              p={2}
-              border={1}
-              sx={{ borderRadius: 3 }}
-            >
-              {Object.keys(boxProps).map(prop => (
-                <Box width={0.5} key={prop + boxProps[prop]} my={1}>
-                  <Text color={prop === currentStyle ? "#96CCFF" : "white"}>
-                    {translation[prop]}:{" "}
-                    <Text
-                      color={prop === currentStyle && "white"}
-                      bg={
-                        prop === currentStyle
-                          ? "#00449e"
-                          : "rgba(255, 255, 255, 0.3)"
-                      }
-                      px="2px"
-                      sx={{
-                        borderRadius: 4
-                      }}
-                      as="span"
-                    >
-                      {boxProps[prop]}
-                    </Text>
-                  </Text>
-                </Box>
-              ))}
-            </Box>
-          )}
-          <Input
-            bg="rgba(0, 0, 0, 0.85)"
-            color="white"
-            onChange={e => {
-              if (e.target.value === "q" && e.target.length === 1) {
-                return;
-              }
-              const { styleProps, currentStyle } = quickStyle(
-                boxProps,
-                e.target.value
-              );
-              setBoxProps(styleProps);
-              setCurrentStyle(currentStyle);
-              setSource(e.target.value);
-            }}
-            value={source}
-            onKeyDown={event => {
-              if (event.key === "Escape") {
-                console.log("bluring");
-                event.target.blur();
-              }
-              if (event.key === "Enter") {
-                if (event.target.value === "clear") {
-                  setBoxProps({});
-                }
-                setSource("");
-              }
-            }}
-            width="100%"
-            ref={input => {
-              inputRef.current = input;
-            }}
-            p={3}
-            style={{
-              borderRadius: 4
-            }}
-          />
-        </Box>
-      </div>
-    </ThemeProvider>
+    <Box
+      display="flex"
+      flexDirection="row"
+      justifyContent="center"
+      sx={{
+        bottom: 3,
+        left: 0,
+        right: 0,
+        position: "absolute"
+      }}
+    >
+      {menuChars.map(char => (
+        <Icon char={char} focused={menuFocus === char} />
+      ))}
+    </Box>
   );
-}
+};
 
 export default App;
