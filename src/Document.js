@@ -6,28 +6,72 @@ const cTable = {
   Text: Text
 };
 
-const Document = ({ node }) => {
+const focusedStyle = {
+  outlineOffset: -1
+};
+
+const Document = ({ node, path = [], selector, settings }) => {
   if (Array.isArray(node)) {
     return (
       <>
         {node.map((child, index) => (
-          <Document key={index} node={child} />
+          <Document
+            key={index}
+            node={child}
+            path={[...path, index]}
+            selector={selector}
+          />
         ))}
       </>
     );
   } else {
     const { component, children, props } = node;
     const Elem = cTable[component];
+
+    const focused = JSON.stringify(path) === JSON.stringify(selector);
+    const showOutlines = settings.showOutlines || focused;
+    let style = { ...(showOutlines ? focusedStyle : {}) };
+    const color = focused ? "green" : "rgba(255, 255, 255, 0.6)";
+    if (showOutlines) {
+      style.outline = `1px solid ${color}`;
+    }
+
     return (
-      <Elem {...props}>
-        {children.map((child, index) => {
-          if (typeof child === "string") {
-            return child;
-          } else {
-            return <Document key={index} node={child} />;
-          }
-        })}
-      </Elem>
+      <>
+        <Elem {...props} style={{ ...style, position: "relative" }}>
+          {showOutlines && (
+            <span
+              style={{
+                backgroundColor: color,
+                color: "black",
+                position: "absolute",
+                left: 0,
+                top: -14,
+                fontSize: 12,
+                paddingLeft: 4,
+                paddingRight: 4
+              }}
+            >
+              {component}
+            </span>
+          )}
+          {children.map((child, index) => {
+            if (typeof child === "string") {
+              return child;
+            } else {
+              return (
+                <Document
+                  key={index}
+                  node={child}
+                  path={[...path, index]}
+                  selector={selector}
+                  settings={settings}
+                />
+              );
+            }
+          })}
+        </Elem>
+      </>
     );
   }
 };

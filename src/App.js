@@ -51,6 +51,14 @@ const node = (component, props, ...children) => ({
   children: children || []
 });
 
+const getInChildren = (obj, keys) => {
+  let value = obj;
+  for (const key of keys) {
+    value = value.children[key];
+  }
+  return value;
+};
+
 const App = () => {
   const commandRef = useRef();
   const [command, setCommand] = useState();
@@ -74,18 +82,33 @@ const App = () => {
       )
     )
   );
-  const [selectors, setSelectors] = useState([]);
+  const [selector, setSelector] = useState([0]);
+  const [settings, setSettings] = useState({});
+  const [commands, setCommands] = useState([]);
 
   useEffect(() => {
     document.addEventListener("keydown", e => {
       const { key } = e;
+      if (commandRef.current && key === "Escape") {
+        setArgs("");
+        setCommand(null);
+      }
+
+      if (commandRef.current) {
+        return;
+      }
+
       if (!commandRef.current && menuChars.includes(key)) {
         e.preventDefault();
         setCommand(key);
       }
-      if (commandRef.current && key === "Escape") {
-        setArgs("");
-        setCommand(null);
+
+      // Are we moving?
+      if (["h", "j", "k", "l", "Enter"].includes(key)) {
+        setCommands([...commands, { type: "move", key, shift: e.shiftKey }]);
+      }
+      if (key === "t") {
+        setCommands([...commands, { type: "toggleOutline" }]);
       }
     });
   }, []);
@@ -94,9 +117,44 @@ const App = () => {
     inputRef.current && inputRef.current.focus();
   }, [command]);
 
+  useEffect(() => {
+    const newCommand = commands[commands.length - 1];
+    if (!newCommand) {
+      return;
+    }
+    const { type } = newCommand;
+    if (type === "toggleOutline") {
+      setSettings({ ...settings, showOutlines: !settings.showOutlines });
+    }
+    const { key, shift } = newCommand;
+
+    const parentChildrenSelector = selector.slice(0, selector.length - 1);
+    const selectorTailValue = selector[selector.length - 1];
+
+    if (key === "j") {
+      const siblings = getInChildren(tree, parentChildrenSelector).children;
+      if (selectorTailValue < siblings.length - 1) {
+        setSelector([...parentChildrenSelector, selectorTailValue + 1]);
+      }
+    } else if (key === "k") {
+      if (selectorTailValue > 0) {
+        setSelector([...parentChildrenSelector, selectorTailValue - 1]);
+      }
+    } else if (key === "Enter") {
+      if (shift) {
+        setSelector(selector.slice(0, selector.length - 1));
+      } else {
+        const children = getInChildren(tree, selector).children;
+        if (children.length > 0 && children[0].component) {
+          setSelector([...selector, 0]);
+        }
+      }
+    }
+  }, [commands]);
+
   return (
     <>
-      <Document node={tree} />
+      <Document node={tree} selector={selector} settings={settings} />
       <Box
         display="flex"
         flexDirection="column"
@@ -117,6 +175,7 @@ const App = () => {
               onChange={e => setArgs(e.target.value)}
               onKeyDown={e => {
                 if (e.key === "Enter") {
+                  setCommand(null);
                   setArgs("");
                 }
               }}
