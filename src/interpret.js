@@ -1,5 +1,5 @@
 import qs from "./quick-styler";
-import { updateIn } from "./utils";
+import { updateIn, getInChildren, exit } from "./utils";
 
 const parseProps = propFrags => {
   return propFrags.reduce((style, frag) => {
@@ -16,22 +16,29 @@ const validNodes = ["Box", "Text"];
 
 const wrap = (prevState, wrapperNode) => {
   if (!validNodes.includes(wrapperNode)) {
-    return prevState;
+    return { ...prevState, error: `Unkonwn element type ${wrapperNode}` };
   }
+
+  const { tree, selector } = prevState;
+  const wrapped = {
+    component: wrapperNode,
+    children: [getInChildren(tree, selector)]
+  };
+
+  const newTree = updateIn(tree, selector, wrapped, true);
+
   return {
     ...prevState,
-    node: {
-      component: wrapperNode,
-      styles: {},
-      children: [prevState.node]
-    }
+    tree: newTree
   };
 };
 
 const style = (prevState, ...propFrags) => {
   const { tree, selector } = prevState;
   const newProps = parseProps(propFrags);
-  const newTree = updateIn(tree, [...selector, "props"], newProps);
+  const node = getInChildren(tree, selector);
+  const update = { ...node, props: { ...node.props, ...newProps } };
+  const newTree = updateIn(tree, [...selector], update);
 
   return {
     ...prevState,
@@ -86,6 +93,7 @@ export const run = (state, steps) => {
   try {
     return steps.reduce((prevState, [commandName, ...args]) => {
       const fn = findCommand(commandName);
+      console.log(commandName, fn);
       if (!fn) {
         throw { ...prevState, error: "command unknown" };
       }

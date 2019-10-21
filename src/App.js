@@ -67,20 +67,8 @@ const App = () => {
     node(
       "Box",
       { p: 3, pt: 5, bg: "orange" },
-      node(
-        "Box",
-        {
-          p: 3,
-          bg: "grey"
-        },
-        ...[0, 1, 2, 3].map(() =>
-          node(
-            "Box",
-            { p: 4, bg: "white", mt: 2 },
-            node("Text", null, "hi thar")
-          )
-        )
-      )
+      node("Box", { p: 3, bg: "pink" }),
+      node("Box", { p: 2, bg: "red" })
     )
   );
   const [draftTree, setDraftTree] = useState();
@@ -109,7 +97,7 @@ const App = () => {
       }
 
       // Are we moving?
-      if (["h", "j", "k", "l", "Enter"].includes(key)) {
+      if (["h", "j", "k", "l", "<", ">"].includes(key)) {
         setCommands([...commands, { type: "move", key, shift: e.shiftKey }]);
       }
       if (key === "l") {
@@ -153,12 +141,10 @@ const App = () => {
       }
     } else if (key === "d") {
       setTree();
-    } else if (key === "Enter") {
-      if (shift) {
-        setSelector(exit(selector));
-      } else {
-        setSelector(enter(tree, selector));
-      }
+    } else if (key === "<") {
+      setSelector(exit(selector));
+    } else if (key === ">") {
+      setSelector(enter(tree, selector));
     }
   }, [commands]);
 

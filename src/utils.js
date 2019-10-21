@@ -7,10 +7,8 @@ export const getInChildren = (obj, keys) => {
 };
 
 export const updateIn = (tree, selector, newValue) => {
-  if (selector.length === 1) {
-    const key = selector[0];
-    const oldValue = tree[key];
-    return { ...tree, [key]: { ...oldValue, ...newValue } };
+  if (selector.length === 0) {
+    return newValue;
   } else {
     const [head, ...rest] = selector;
     return {
