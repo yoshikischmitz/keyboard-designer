@@ -36,40 +36,54 @@ const Document = ({ node, path = [], selector, settings }) => {
       style.outline = `1px solid ${color}`;
     }
 
+    const childrenList = children.map((child, index) => {
+      if (typeof child === "string") {
+        return child;
+      } else {
+        return (
+          <Document
+            key={index}
+            node={child}
+            path={[...path, index]}
+            selector={selector}
+            settings={settings}
+          />
+        );
+      }
+    });
+
+    const label = showOutlines && (
+      <span
+        style={{
+          backgroundColor: color,
+          color: "white",
+          position: "absolute",
+          left: 0,
+          top: -14,
+          fontSize: 12,
+          paddingLeft: 4,
+          paddingRight: 4
+        }}
+      >
+        {component}
+      </span>
+    );
+
+    if (settings.toggleView) {
+      return (
+        <div style={{ ...style, position: "relative" }}>
+          {label}
+          {component}
+          <div style={{ marginLeft: 8 }}>{childrenList}</div>
+        </div>
+      );
+    }
+
     return (
       <>
         <Elem {...props} style={{ ...style, position: "relative" }}>
-          {showOutlines && (
-            <span
-              style={{
-                backgroundColor: color,
-                color: "white",
-                position: "absolute",
-                left: 0,
-                top: -14,
-                fontSize: 12,
-                paddingLeft: 4,
-                paddingRight: 4
-              }}
-            >
-              {component}
-            </span>
-          )}
-          {children.map((child, index) => {
-            if (typeof child === "string") {
-              return child;
-            } else {
-              return (
-                <Document
-                  key={index}
-                  node={child}
-                  path={[...path, index]}
-                  selector={selector}
-                  settings={settings}
-                />
-              );
-            }
-          })}
+          {label}
+          {childrenList}
         </Elem>
       </>
     );

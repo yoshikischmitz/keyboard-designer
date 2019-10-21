@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { Box, Text } from "rebass";
 import { Input } from "@rebass/forms";
 import Document from "./Document";
+import { run, tokenize } from "./interpret";
+import theme from "./theme";
+import { ThemeProvider } from "theme-ui";
+import { getInChildren, enter, exit } from "./utils";
 
 const Icon = ({ char, focused, label }) => (
   <Box
@@ -27,11 +31,12 @@ const Icon = ({ char, focused, label }) => (
   </Box>
 );
 
-const menuChars = ["w", "s", "f", "i", "e", "a"];
+const menuChars = ["w", "s", "q", "f", "i", "e", "a"];
 const menuIcons = { a: "aA" };
 const menuLabels = {
   w: "wrap",
   s: "style",
+  q: "qs",
   f: "find",
   i: "insert",
   e: "edit",
@@ -50,14 +55,6 @@ const node = (component, props, ...children) => ({
   props,
   children: children || []
 });
-
-const getInChildren = (obj, keys) => {
-  let value = obj;
-  for (const key of keys) {
-    value = value.children[key];
-  }
-  return value;
-};
 
 const App = () => {
   const commandRef = useRef();
@@ -86,6 +83,8 @@ const App = () => {
       )
     )
   );
+  const [draftTree, setDraftTree] = useState();
+
   const [selector, setSelector] = useState([0]);
   const [settings, setSettings] = useState({});
   const [commands, setCommands] = useState([]);
@@ -93,8 +92,10 @@ const App = () => {
   useEffect(() => {
     document.addEventListener("keydown", e => {
       const { key } = e;
+
       if (commandRef.current && key === "Escape") {
         setArgs("");
+        setDraftTree(null);
         setCommand(null);
       }
 
@@ -111,8 +112,11 @@ const App = () => {
       if (["h", "j", "k", "l", "Enter"].includes(key)) {
         setCommands([...commands, { type: "move", key, shift: e.shiftKey }]);
       }
-      if (key === "t") {
+      if (key === "l") {
         setCommands([...commands, { type: "toggleOutline" }]);
+      }
+      if (key === "o") {
+        setCommands([...commands, { type: "toggleView" }]);
       }
     });
   }, []);
@@ -130,6 +134,9 @@ const App = () => {
     if (type === "toggleOutline") {
       setSettings({ ...settings, showOutlines: !settings.showOutlines });
     }
+    if (type === "toggleView") {
+      setSettings({ ...settings, toggleView: !settings.toggleView });
+    }
     const { key, shift } = newCommand;
 
     const parentChildrenSelector = selector.slice(0, selector.length - 1);
@@ -144,21 +151,24 @@ const App = () => {
       if (selectorTailValue > 0) {
         setSelector([...parentChildrenSelector, selectorTailValue - 1]);
       }
+    } else if (key === "d") {
+      setTree();
     } else if (key === "Enter") {
       if (shift) {
-        setSelector(selector.slice(0, selector.length - 1));
+        setSelector(exit(selector));
       } else {
-        const children = getInChildren(tree, selector).children;
-        if (children.length > 0 && children[0].component) {
-          setSelector([...selector, 0]);
-        }
+        setSelector(enter(tree, selector));
       }
     }
   }, [commands]);
 
   return (
-    <>
-      <Document node={tree} selector={selector} settings={settings} />
+    <ThemeProvider theme={theme}>
+      <Document
+        node={draftTree ? draftTree : tree}
+        selector={selector}
+        settings={settings}
+      />
       <Box
         display="flex"
         flexDirection="column"
@@ -172,14 +182,24 @@ const App = () => {
       >
         {command && (
           <Menu>
-            {console.log("input got rendered")}
             <Input
               ref={inputRef}
               value={args}
-              onChange={e => setArgs(e.target.value)}
+              onChange={e => {
+                const { tree: newTree } = run(
+                  { tree, selector },
+                  tokenize(command + " " + e.target.value)
+                );
+                setArgs(e.target.value);
+                setDraftTree(newTree);
+              }}
               onKeyDown={e => {
                 if (e.key === "Enter") {
                   setCommand(null);
+                  if (draftTree) {
+                    setTree(draftTree);
+                    setDraftTree(null);
+                  }
                   setArgs("");
                 }
               }}
@@ -196,7 +216,7 @@ const App = () => {
           ))}
         </Box>
       </Box>
-    </>
+    </ThemeProvider>
   );
 };
 
