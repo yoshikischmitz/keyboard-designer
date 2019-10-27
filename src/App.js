@@ -141,9 +141,9 @@ const App = () => {
       }
     } else if (key === "d") {
       setTree();
-    } else if (key === "<") {
+    } else if (key === "[") {
       setSelector(exit(selector));
-    } else if (key === ">") {
+    } else if (key === "]") {
       setSelector(enter(tree, selector));
     }
   }, [commands]);
