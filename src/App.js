@@ -97,7 +97,7 @@ const App = () => {
       }
 
       // Are we moving?
-      if (["h", "j", "k", "l", "<", ">"].includes(key)) {
+      if (["h", "j", "k", "l", "[", "]"].includes(key)) {
         setCommands([...commands, { type: "move", key, shift: e.shiftKey }]);
       }
       if (key === "l") {
