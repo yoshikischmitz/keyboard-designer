@@ -1,6 +1,12 @@
 import qs from "./quick-styler";
 import { updateIn, getInChildren, exit } from "./utils";
 
+const node = (component, props = {}, ...children) => ({
+  component,
+  props,
+  children: children || []
+});
+
 const parseProps = propFrags => {
   return propFrags.reduce((style, frag) => {
     const [prop, value] = frag.split("=");
@@ -25,11 +31,33 @@ const wrap = (prevState, wrapperNode) => {
     children: [getInChildren(tree, selector)]
   };
 
-  const newTree = updateIn(tree, selector, wrapped, true);
+  const newTree = updateIn(tree, selector, wrapped);
 
   return {
     ...prevState,
     tree: newTree
+  };
+};
+
+const insert = (prevState, wrapperNode) => {
+  console.log(wrapperNode);
+  if (!validNodes.includes(wrapperNode)) {
+    return { ...prevState, error: `Unkonwn element type ${wrapperNode}` };
+  }
+
+  const insertNode = node(wrapperNode);
+  const { tree, selector } = prevState;
+
+  const parent = getInChildren(tree, selector);
+  const updated = { ...parent, children: [insertNode, ...parent.children] };
+
+  const newTree = updateIn(tree, selector, updated);
+  console.log(JSON.stringify(newTree, null, 2));
+
+  return {
+    ...prevState,
+    tree: newTree,
+    selector: [...selector, 0]
   };
 };
 
@@ -38,7 +66,7 @@ const style = (prevState, ...propFrags) => {
   const newProps = parseProps(propFrags);
   const node = getInChildren(tree, selector);
   const update = { ...node, props: { ...node.props, ...newProps } };
-  const newTree = updateIn(tree, [...selector], update);
+  const newTree = updateIn(tree, selector, update);
 
   return {
     ...prevState,
@@ -77,7 +105,8 @@ const commandMap = [
   [["qs", "q", "quickstyle"], quickstyle],
   [["wrap", "w"], wrap],
   [["style", "s"], style],
-  [["find"], find]
+  [["find"], find],
+  [["i", "insert"], insert]
 ];
 
 const findCommand = commandName => {
@@ -99,6 +128,7 @@ export const run = (state, steps) => {
       }
       try {
         const next = fn(prevState, ...args);
+        console.log(JSON.stringify(next, null, 2));
         return next;
       } catch (error) {
         throw {
