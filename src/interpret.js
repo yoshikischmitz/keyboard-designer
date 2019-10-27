@@ -61,6 +61,33 @@ const insert = (prevState, wrapperNode) => {
   };
 };
 
+const xpend = (prevState, wrapperNode, offset) => {
+  if (!validNodes.includes(wrapperNode)) {
+    return { ...prevState, error: `Unkonwn element type ${wrapperNode}` };
+  }
+  const { tree, selector } = prevState;
+  const parentSelector = selector.slice(0, selector.length - 1);
+
+  const newNode = node(wrapperNode);
+
+  const oldParent = getInChildren(tree, parentSelector);
+  const index = selector[selector.length - 1] + offset;
+  const newParent = {
+    ...oldParent,
+    children: [
+      ...oldParent.children.slice(0, index),
+      newNode,
+      ...oldParent.children.slice(index)
+    ]
+  };
+  const newTree = updateIn(tree, parentSelector, newParent);
+  return {
+    ...prevState,
+    tree: newTree,
+    selector: [...parentSelector, index]
+  };
+};
+
 const style = (prevState, ...propFrags) => {
   const { tree, selector } = prevState;
   const newProps = parseProps(propFrags);
@@ -106,7 +133,9 @@ const commandMap = [
   [["wrap", "w"], wrap],
   [["style", "s"], style],
   [["find"], find],
-  [["i", "insert"], insert]
+  [["i", "insert"], insert],
+  [["o", "append"], (...params) => xpend(...params, 1)],
+  [["O", "prepend"], (...params) => xpend(...params, 0)]
 ];
 
 const findCommand = commandName => {

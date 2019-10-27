@@ -31,7 +31,7 @@ const Icon = ({ char, focused, label }) => (
   </Box>
 );
 
-const menuChars = ["w", "s", "q", "f", "i", "e", "a"];
+const menuChars = ["w", "s", "q", "f", "i", "o", "O", "e", "a"];
 const menuIcons = { a: "aA" };
 const menuLabels = {
   w: "wrap",
@@ -39,6 +39,8 @@ const menuLabels = {
   q: "qs",
   f: "find",
   i: "insert",
+  o: "after",
+  O: "before",
   e: "edit",
   a: "add",
   "/": "cmd"
@@ -103,7 +105,7 @@ const App = () => {
       if (key === "l") {
         setCommands([...commands, { type: "toggleOutline" }]);
       }
-      if (key === "o") {
+      if (key === "n") {
         setCommands([...commands, { type: "toggleView" }]);
       }
     });
