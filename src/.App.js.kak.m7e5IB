@@ -152,6 +152,7 @@ const App = () => {
             ]);
           }
         } else {
+          const condition = key === "j" ? selectorTailValue
         }
       }
     } else {

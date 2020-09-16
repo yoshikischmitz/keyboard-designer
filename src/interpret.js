@@ -1,22 +1,11 @@
-import qs from "./quick-styler";
 import { updateIn, getInChildren, exit } from "./utils";
+import style from "./commands/style";
 
 const node = (component, props = {}, ...children) => ({
   component,
-  props,
+  props: { ...props, p: 2 },
   children: children || []
 });
-
-const parseProps = propFrags => {
-  return propFrags.reduce((style, frag) => {
-    const [prop, value] = frag.split("=");
-    if (value.length > 0) {
-      return { ...style, [prop]: value.replace(/'/g, "") };
-    } else {
-      return style;
-    }
-  }, {});
-};
 
 const validNodes = ["Box", "Text"];
 
@@ -26,10 +15,7 @@ const wrap = (prevState, wrapperNode) => {
   }
 
   const { tree, selector } = prevState;
-  const wrapped = {
-    component: wrapperNode,
-    children: [getInChildren(tree, selector)]
-  };
+  const wrapped = node(wrapperNode, {}, getInChildren(tree, selector));
 
   const newTree = updateIn(tree, selector, wrapped);
 
@@ -80,31 +66,13 @@ const xpend = (prevState, wrapperNode, offset) => {
       ...oldParent.children.slice(index)
     ]
   };
+
   const newTree = updateIn(tree, parentSelector, newParent);
   return {
     ...prevState,
     tree: newTree,
     selector: [...parentSelector, index]
   };
-};
-
-const style = (prevState, ...propFrags) => {
-  const { tree, selector } = prevState;
-  const newProps = parseProps(propFrags);
-  const node = getInChildren(tree, selector);
-  const update = { ...node, props: { ...node.props, ...newProps } };
-  const newTree = updateIn(tree, selector, update);
-
-  return {
-    ...prevState,
-    tree: newTree
-  };
-};
-
-const quickstyle = (prevState, propProgram) => {
-  const { node } = prevState;
-  const styles = qs(node.styles, propProgram).styleProps;
-  return { ...prevState, node: { ...node, styles } };
 };
 
 const findInTree = (tree, properties) => {
@@ -129,7 +97,6 @@ const find = (prevState, ...properties) => {
 };
 
 const commandMap = [
-  [["qs", "q", "quickstyle"], quickstyle],
   [["wrap", "w"], wrap],
   [["style", "s"], style],
   [["find"], find],
@@ -151,7 +118,7 @@ export const run = (state, steps) => {
   try {
     return steps.reduce((prevState, [commandName, ...args]) => {
       const fn = findCommand(commandName);
-      console.log(commandName, fn);
+
       if (!fn) {
         throw { ...prevState, error: "command unknown" };
       }
